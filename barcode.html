@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Scanner</title>
+    <!-- Bootstrap CSS -->
+    <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
+            rel="stylesheet"
+    />
+    <style>
+        #scanner-container {
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
+            margin-top: 20px;
+            position: relative;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        video {
+            width: 100%;
+        }
+        .result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container py-5">
+    <h1 class="text-center">Product Scanner</h1>
+    <p class="text-center text-muted">Scan a barcode and save product details</p>
+
+    <!-- Scanner -->
+    <div id="scanner-container" class="mb-4">
+        <video id="video" autoplay></video>
+    </div>
+
+    <!-- Product Details Form -->
+    <div id="product-form" class="shadow p-4 rounded bg-white">
+        <h4 class="mb-3">Enter Product Details</h4>
+        <form>
+            <div class="mb-3">
+                <label for="barcode" class="form-label">Barcode</label>
+                <input type="text" id="barcode" class="form-control" placeholder="Scanned Barcode" readonly>
+            </div>
+            <div class="mb-3">
+                <label for="productName" class="form-label">Product Name</label>
+                <input type="text" id="productName" class="form-control" placeholder="Enter product name">
+            </div>
+            <div class="mb-3">
+                <label for="productPrice" class="form-label">Product Price</label>
+                <input type="number" id="productPrice" class="form-control" placeholder="Enter product price">
+            </div>
+            <button type="button" id="saveProduct" class="btn btn-primary w-100">Save Product</button>
+        </form>
+    </div>
+
+    <!-- Product List -->
+    <div id="product-list" class="mt-5">
+        <h4 class="mb-3">Saved Products</h4>
+        <table class="table table-bordered table-striped">
+            <thead class="table-light">
+            <tr>
+                <th>Barcode</th>
+                <th>Product Name</th>
+                <th>Product Price</th>
+            </tr>
+            </thead>
+            <tbody id="productTableBody">
+            <!-- Products will be dynamically added here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Bootstrap JS and ZXing Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.18.6/umd/index.min.js"></script>
+<script>
+    const codeReader = new ZXing.BrowserBarcodeReader();
+    const videoElement = document.getElementById("video");
+    const barcodeInput = document.getElementById("barcode");
+    const productNameInput = document.getElementById("productName");
+    const productPriceInput = document.getElementById("productPrice");
+    const saveButton = document.getElementById("saveProduct");
+    const productTableBody = document.getElementById("productTableBody");
+
+    // Start barcode scanner
+    function startScanner() {
+        codeReader.decodeFromVideoDevice(null, "video", (result, err) => {
+            if (result) {
+                barcodeInput.value = result.text; // Display scanned barcode
+            }
+            if (err && !(err instanceof ZXing.NotFoundException)) {
+                console.error(err);
+            }
+        });
+    }
+
+    // Initialize scanner on page load
+    document.addEventListener("DOMContentLoaded", startScanner);
+
+    // Save product details
+    saveButton.addEventListener("click", () => {
+        const barcode = barcodeInput.value.trim();
+        const productName = productNameInput.value.trim();
+        const productPrice = productPriceInput.value.trim();
+
+        if (!barcode || !productName || !productPrice) {
+            alert("Please fill in all fields.");
+            return;
+        }
+
+        // Add product to the table
+        const row = document.createElement("tr");
+        row.innerHTML = `
+    <td>${barcode}</td>
+    <td>${productName}</td>
+    <td>${productPrice}</td>
+  `;
+        productTableBody.appendChild(row);
+
+        // Clear the form for the next product
+        barcodeInput.value = "";
+        productNameInput.value = "";
+        productPriceInput.value = "";
+
+        alert("Product saved successfully!");
+    });
+
+</script>
+</body>
+</html>
